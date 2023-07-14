@@ -1,5 +1,5 @@
-const { NotFoundException, AuthErrorException, InputErrorException, UploadFailedException, EmailOrPasswordWrongException } = require('../util/exceptions')
-const httpStatusCodes = require('../util/httpStatusCodes')
+const { NotFoundException, AuthErrorException, InputErrorException, UploadFailedException, EmailOrPasswordWrongException } = require('../enums/exceptions')
+const httpStatusCodes = require('../enums/httpStatusCodes')
 module.exports = {
   apiErrorHandler (err, req, res, next) {
     if (err instanceof NotFoundException) {
