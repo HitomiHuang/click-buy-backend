@@ -6,13 +6,10 @@ module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
       User.hasOne(models.Shop, { foreignKey: 'userId' })
-      User.belongsToMany(models.Product, {
-        through: models.Cart,
-        foreignKey: 'userId',
-        as: 'InCartProduct'
-      })
+      User.belongsToMany(models.Product, {through: models.Cart})
+      User.hasMany(models.Cart)
     }
-  }
+11  }
   User.init({
     name: DataTypes.STRING,
     account: DataTypes.STRING,
