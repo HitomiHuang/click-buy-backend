@@ -34,7 +34,7 @@ const cartController = {
         userId: userId,
         productId: productId.trim(),
         amount: amount.trim()
-      },{
+      }, {
         fields: ['userId', 'productId', 'amount']
       })
 
@@ -43,6 +43,36 @@ const cartController = {
         data: {
         }
       })
+    } catch (err) {
+      next(err)
+    }
+  },
+  editCarts: async (req, res, next) => {
+    try {
+      const { productId, amount } = req.body
+      if (!productId?.trim() || !amount?.trim()) {
+        throw new InputErrorException('the fields [productId], [amount] are required')
+      }
+
+      const product = await Product.findByPk(productId.trim())
+      if (!product) throw new NotFoundException('the product did not exist')
+      if (product.amount < amount) throw new InputErrorException('amount is not enough')
+
+      const userId = await getUser(req).id
+
+      const cart = await Cart.findOne({ where: { userId, productId: productId.trim() } })
+      if (!cart) throw new NotFoundException('the product did not in your cart')
+
+      await cart.update({
+        amount: amount.trim()
+      })
+
+      return res.status(200).json({
+        status: 'success',
+        data: {
+        }
+      })
+
     } catch (err) {
       next(err)
     }
