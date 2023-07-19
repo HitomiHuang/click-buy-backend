@@ -8,7 +8,7 @@ const localAuthenticate = passport.authenticate('local', { session: false })
 const { apiErrorHandler } = require('../middleware/error-handler')
 
 router.post('/login', fieldExamine, localAuthenticate, userController.login)
-
+router.get('/products', productController.getProducts)
 
 router.use('/', apiErrorHandler)
 module.exports = router
