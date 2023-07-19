@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
     userId: DataTypes.INTEGER,
     productId: DataTypes.INTEGER,
     amount: DataTypes.INTEGER,
-    status: DataTypes.String
+    status: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'Cart',

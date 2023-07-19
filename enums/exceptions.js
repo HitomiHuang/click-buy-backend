@@ -26,11 +26,11 @@ function UploadFailedException(msg) {
 UploadFailedException.prototype = new Error()
 UploadFailedException.prototype.constructor = UploadFailedException
 
-function EmailOrPasswordWrongException(msg) {
-  this.name = 'EmailOrPasswordWrongException'
+function AccountOrPasswordWrongException(msg) {
+  this.name = 'AccountOrPasswordWrongException'
   this.message = msg
 }
-EmailOrPasswordWrongException.prototype = new Error()
-EmailOrPasswordWrongException.prototype.constructor = EmailOrPasswordWrongException
+AccountOrPasswordWrongException.prototype = new Error()
+AccountOrPasswordWrongException.prototype.constructor = AccountOrPasswordWrongException
 
-module.exports = { NotFoundException, AuthErrorException, InputErrorException, UploadFailedException, EmailOrPasswordWrongException }
+module.exports = { NotFoundException, AuthErrorException, InputErrorException, UploadFailedException, AccountOrPasswordWrongException }
