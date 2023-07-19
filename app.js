@@ -1,4 +1,5 @@
 const express = require('express')
+const methodOverride = require('method-override')
 const cors = require('cors')
 
 if (process.env.NODE_ENV !== 'production') {
@@ -15,6 +16,7 @@ const port = process.env.PORT || 3000
 app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 app.use(passport.initialize())
+app.use(methodOverride('_method'))
 
 app.use('/', routes)
 app.use((req, res, next) => {
