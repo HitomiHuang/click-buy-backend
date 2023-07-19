@@ -13,7 +13,8 @@ router.get('/products', authenticated, productController.getProducts)
 router.post('/products/new', authenticated, productController.addProduct)
 router.get('/products/:product_id', authenticated, productController.getProduct)
 router.put('/products/:product_id/edit', authenticated, productController.editProduct)
-router.get('/carts', authenticated, cartController.getCart)
+router.get('/carts', authenticated, cartController.getCarts)
+router.post('/carts/add', authenticated, cartController.addToCart)
 
 router.use('/', apiErrorHandler)
 module.exports = router

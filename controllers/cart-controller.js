@@ -1,8 +1,8 @@
-const { Product, User, Cart } = require('../models')
+const { Product, User, Cart, Shop } = require('../models')
 const { InputErrorException, NotFoundException } = require('../enums/exceptions')
 const { getUser } = require('../utils/auth-helpers')
 const cartController = {
-  getCart: async (req, res, next) => {
+  getCarts: async (req, res, next) => {
     const userId = getUser(req).id
     const carts = await Cart.findAll(
       {
@@ -16,6 +16,36 @@ const cartController = {
         carts
       }
     })
+  },
+  addToCart: async (req, res, next) => {
+    try {
+      const { productId, amount } = req.body
+      if (!productId?.trim() || !amount?.trim()) {
+        throw new InputErrorException('the fields [productId], [amount] are required')
+      }
+
+      const product = await Product.findByPk(productId.trim())
+      if (!product) throw new NotFoundException('the product did not exist')
+      if (product.amount < amount) throw new InputErrorException('amount is not enough')
+
+      const userId = await getUser(req).id
+
+      await Cart.create({
+        userId: userId,
+        productId: productId.trim(),
+        amount: amount.trim()
+      },{
+        fields: ['userId', 'productId', 'amount']
+      })
+
+      return res.status(200).json({
+        status: 'success',
+        data: {
+        }
+      })
+    } catch (err) {
+      next(err)
+    }
   }
 }
 module.exports = cartController
