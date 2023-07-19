@@ -9,6 +9,7 @@ const { apiErrorHandler } = require('../middleware/error-handler')
 
 router.post('/login', fieldExamine, localAuthenticate, userController.login)
 router.get('/products', authenticated, productController.getProducts)
+router.post('/products/new', productController.addProduct)
 router.get('/products/:product_id', authenticated, productController.getProduct)
 
 router.use('/', apiErrorHandler)
