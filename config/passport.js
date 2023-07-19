@@ -1,7 +1,7 @@
 const passport = require('passport')
 const LocalStrategy = require('passport-local')
 const passportJWT = require('passport-jwt')
-const { NotFoundException, EmailOrPasswordWrongException } = require('../util/exceptions')
+const { NotFoundException, AccountOrPasswordWrongException } = require('../enums/exceptions')
 const { User } = require('../models')
 const JWTSECRET = process.env.JWT_SECRET
 
@@ -16,8 +16,8 @@ passport.use(new LocalStrategy(
   async (account, password, done) => {
     try {
       const user = await User.findOne({ where: { account } })
-      if (!user) throw new NotFoundException('the email have not been registered')
-      if (user.password !== password) throw new EmailOrPasswordWrongException('email or password wrong')
+      if (!user) throw new NotFoundException('the account have not been registered')
+      if (user.password !== password) throw new AccountOrPasswordWrongException('account or password wrong')
       return done(null, user)
     } catch (err) {
       return done(err, false)
