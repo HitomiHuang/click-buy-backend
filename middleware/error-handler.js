@@ -1,4 +1,4 @@
-const { NotFoundException, AuthErrorException, InputErrorException, UploadFailedException, EmailOrPasswordWrongException } = require('../enums/exceptions')
+const { NotFoundException, AuthErrorException, InputErrorException, UploadFailedException, AccountOrPasswordWrongException } = require('../enums/exceptions')
 const httpStatusCodes = require('../enums/httpStatusCodes')
 module.exports = {
   apiErrorHandler (err, req, res, next) {
@@ -22,7 +22,7 @@ module.exports = {
         status: `${err.name}`,
         message: `${err.message}`
       })
-    } else if (err instanceof EmailOrPasswordWrongException) {
+    } else if (err instanceof AccountOrPasswordWrongException) {
       res.status(httpStatusCodes.BAD_REQUEST).json({
         status: `${err.name}`,
         message: `${err.message}`
