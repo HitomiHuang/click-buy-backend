@@ -1,5 +1,6 @@
 const { Product, Shop } = require('../models')
 const { InputErrorException, NotFoundException } = require('../enums/exceptions')
+const { Op } = require("sequelize")
 const productController = {
   getProducts: async (req, res, next) => {
     try {
@@ -21,6 +22,37 @@ const productController = {
         status: 'success',
         data: {
           product
+        }
+      })
+    } catch (err) {
+      next(err)
+    }
+  },
+  searchProducts: async (req, res, next) => {
+    try {
+      let { keyword, type, orderBy, minPrice, maxPrice } = req.body
+      keyword = keyword?.trim() ? keyword.trim() : ''
+      type = type?.trim() ? type.trim() : 'updatedAt'
+      minPrice = minPrice?.trim() ? minPrice.trim() : 0
+      maxPrice = maxPrice?.trim() ? maxPrice.trim() : Number.MAX_VALUE
+      orderBy = 'DESC' ? 'DESC' : 'ASC'
+
+      const products = await Product.findAll({
+        where: {
+          name: { [Op.like]: `%${keyword}%` },
+          price: {
+            [Op.gte]: minPrice,
+            [Op.lte]: maxPrice
+          }
+        },
+        include: { model: Shop },
+        order: [[type, orderBy]]
+      })
+
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          products
         }
       })
     } catch (err) {
