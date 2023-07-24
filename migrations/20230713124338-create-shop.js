@@ -13,6 +13,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.STRING
       },
+      addr: {
+        allowNull: false,
+        type: Sequelize.STRING
+      },
       logo: {
         type: Sequelize.STRING
       },

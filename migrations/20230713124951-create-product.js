@@ -20,7 +20,11 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER
       },
-      amount: {
+      rest_amount:{
+        allowNull: false,
+        type: Sequelize.INTEGER
+      },
+      total_amount: {
         allowNull: false,
         type: Sequelize.INTEGER
       },

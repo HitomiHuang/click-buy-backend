@@ -8,6 +8,7 @@ module.exports = {
     shops.push({
       name: 'shop001',
       logo: '',
+      addr: '台北市',
       desc: 'this is the best shop',
       user_id: sellers[0].id,
       created_at: new Date(),
