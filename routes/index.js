@@ -17,6 +17,7 @@ router.put('/products/:product_id/edit', authenticated, productController.editPr
 router.get('/carts', authenticated, cartController.getCarts)
 router.post('/carts/add', authenticated, cartController.addToCart)
 router.put('/carts/edit', authenticated, cartController.editCarts)
+router.put('/carts/buy', authenticated, cartController.buyProducts)
 
 router.use('/', apiErrorHandler)
 module.exports = router

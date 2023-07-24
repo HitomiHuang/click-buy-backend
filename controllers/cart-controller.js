@@ -6,7 +6,7 @@ const cartController = {
     const userId = getUser(req).id
     const carts = await Cart.findAll(
       {
-        where: { userId },
+        where: { userId, status: null },
         attributes: { exclude: ['UserId', 'ProductId'] },
         include: { model: Product }
       })
@@ -20,7 +20,7 @@ const cartController = {
   addToCart: async (req, res, next) => {
     try {
       const { productId, amount } = req.body
-      if (!productId?.trim() || !amount?.trim()) {
+      if (!productId?.trim() || !amount) {
         throw new InputErrorException('the fields [productId], [amount] are required')
       }
 
@@ -30,13 +30,27 @@ const cartController = {
 
       const userId = await getUser(req).id
 
-      await Cart.create({
-        userId: userId,
-        productId: productId.trim(),
-        amount: amount.trim()
-      }, {
-        fields: ['userId', 'productId', 'amount']
+      const isCartExist = await Cart.findOne({
+        where: {
+          userId: userId,
+          productId: productId.trim(),
+          status: null
+        }
       })
+
+      if (isCartExist) {
+        await isCartExist.update({
+          amount: (isCartExist.amount + amount)
+        })
+      } else {
+        await Cart.create({
+          userId: userId,
+          productId: productId.trim(),
+          amount
+        }, {
+          fields: ['userId', 'productId', 'amount']
+        })
+      }
 
       return res.status(200).json({
         status: 'success',
@@ -64,8 +78,48 @@ const cartController = {
       if (!cart) throw new NotFoundException('the product did not in your cart')
 
       await cart.update({
-        amount: amount.trim()
+        amount
       })
+
+      return res.status(200).json({
+        status: 'success',
+        data: {
+        }
+      })
+
+    } catch (err) {
+      next(err)
+    }
+  },
+  buyProducts: async (req, res, next) => {
+    try {
+      const { carts } = req.body
+      const userId = await getUser(req).id
+
+      if (carts && carts.length) {
+        for (let i in carts) {
+          let product = carts[i]
+          const cart = await Cart.findOne({ where: { userId, productId: product.productId, status: null }, include: { model: Product } })
+          if (!cart) throw new NotFoundException('the product did not in your cart')
+          if (cart.restAmount < product.amount) throw new InputErrorException('the product is not enough')
+          console.log('here')
+          console.log(cart.toJSON())
+
+          const updateCNT = await cart.update({
+            amount: product.amount,
+            status: 'check-out'
+          })
+
+          console.log(updateCNT)
+
+          const renewProduct = await Product.findByPk(product.productId)
+          if (!renewProduct) throw new NotFoundException('the product not found')
+          console.log(renewProduct.restAmount)
+          await renewProduct.update({
+            restAmount: (renewProduct.restAmount - product.amount)
+          })
+        }
+      }
 
       return res.status(200).json({
         status: 'success',
