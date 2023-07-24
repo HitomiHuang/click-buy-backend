@@ -62,15 +62,15 @@ const productController = {
   addProduct: async (req, res, next) => {
     try {
       const { name, price, image, amount, desc, status, shopId } = req.body
-      if (!name?.trim() || !price?.trim() || !amount?.trim() || !status?.trim() || !shopId.trim()) {
+      if (!name?.trim() || !price || !amount || !status?.trim() || !shopId.trim()) {
         throw new InputErrorException('the fields [name], [price], [amount], [status], [shopId] are required')
       }
 
       await Product.create({
         name: name.trim(),
         image: image?.trim(),
-        price: price.trim(),
-        amount: amount.trim(),
+        price: price,
+        amount: amount,
         desc: desc?.trim(),
         status: status.trim(),
         shopId: shopId.trim()
@@ -99,7 +99,7 @@ const productController = {
         name: name.trim() || product.name,
         price: price.trim() || product.price,
         image: image?.trim() || product.image,
-        amount: amount.trim() || product.amount,
+        amount: amount || product.amount,
         desc: desc?.trim() || product.desc,
         status: status.trim() || product.status
       })
