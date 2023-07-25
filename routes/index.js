@@ -10,6 +10,9 @@ const upload = require('../middleware/multer')
 const { apiErrorHandler } = require('../middleware/error-handler')
 
 router.post('/login', fieldExamine, localAuthenticate, userController.login)
+router.get('/get_current_user', authenticated, userController.getCurrentUser)
+router.get('/users/:userId', authenticated, userController.getUserId)
+
 router.get('/products', authenticated, productController.getProducts)
 router.get('/products/seller', authenticated, productController.getProductsByShop)
 router.post('/products/new', authenticated, productController.addProduct)
@@ -17,6 +20,7 @@ router.post('/products/search', authenticated, productController.searchProducts)
 router.post('/products/add', authenticated, upload.single('image'), productController.addProduct)
 router.get('/products/:product_id', authenticated, productController.getProduct)
 router.put('/products/edit', authenticated, upload.single('image'), productController.editProduct)
+
 router.get('/carts', authenticated, cartController.getCarts)
 router.post('/carts/add', authenticated, cartController.addToCart)
 router.put('/carts/edit', authenticated, cartController.editCarts)
