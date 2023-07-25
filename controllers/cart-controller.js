@@ -102,21 +102,17 @@ const cartController = {
           const cart = await Cart.findOne({ where: { userId, productId: product.productId, status: null }, include: { model: Product } })
           if (!cart) throw new NotFoundException('the product did not in your cart')
           if (cart.restAmount < product.amount) throw new InputErrorException('the product is not enough')
-          console.log('here')
-          console.log(cart.toJSON())
 
           const updateCNT = await cart.update({
             amount: product.amount,
             status: 'check-out'
           })
 
-          console.log(updateCNT)
-
           const renewProduct = await Product.findByPk(product.productId)
           if (!renewProduct) throw new NotFoundException('the product not found')
-          console.log(renewProduct.restAmount)
           await renewProduct.update({
-            restAmount: (renewProduct.restAmount - product.amount)
+            restAmount: (renewProduct.restAmount - product.amount),
+            soldOut: (renewProduct.soldOut + product.amount)
           })
         }
       }

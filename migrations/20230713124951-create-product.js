@@ -28,6 +28,10 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER
       },
+      soldout:{
+        allowNull: false,
+        type: Sequelize.INTEGER
+      },
       desc: {
         type: Sequelize.STRING
       },

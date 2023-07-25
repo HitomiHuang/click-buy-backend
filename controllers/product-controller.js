@@ -1,5 +1,7 @@
-const { Product, Shop } = require('../models')
+const { Product, Shop, User } = require('../models')
 const { InputErrorException, NotFoundException } = require('../enums/exceptions')
+const { getUser } = require('../utils/auth-helpers')
+const awsHandler = require('../utils/aws-helpers')
 const { Op } = require("sequelize")
 const productController = {
   getProducts: async (req, res, next) => {
@@ -30,24 +32,43 @@ const productController = {
   },
   searchProducts: async (req, res, next) => {
     try {
-      let { keyword, type, orderBy, minPrice, maxPrice } = req.body
+      console.log(req.body)
+      let { keyword, selectType, orderBy, minPrice, maxPrice } = req.body
       keyword = keyword?.trim() ? keyword.trim() : ''
-      type = type?.trim() ? type.trim() : 'updatedAt'
+      selectType = selectType?.trim() ? selectType.trim() : 'updatedAt'
       minPrice = minPrice?.trim() ? minPrice.trim() : 0
       maxPrice = maxPrice?.trim() ? maxPrice.trim() : Number.MAX_VALUE
-      orderBy = 'DESC' ? 'DESC' : 'ASC'
+      orderBy = orderBy === 'ASC' ? 'ASC' : 'DESC'
 
-      const products = await Product.findAll({
-        where: {
-          name: { [Op.like]: `%${keyword}%` },
-          price: {
-            [Op.gte]: minPrice,
-            [Op.lte]: maxPrice
-          }
-        },
-        include: { model: Shop },
-        order: [[type, orderBy]]
+      const products = await Product.findAll(
+        {
+          where: {
+            name: { [Op.like]: `%${keyword}%` },
+            price: {
+              [Op.gte]: minPrice,
+              [Op.lte]: maxPrice
+            }
+          },
+          include: { model: Shop },
+          order: [[selectType, orderBy]]
+        }
+      )
+
+      return res.status(200).json({
+        status: 'success',
+        data: {
+          products
+        }
       })
+    } catch (err) {
+      next(err)
+    }
+  },
+  getProductsByShop: async (req, res, next) => {
+    try {
+      const shop = await Shop.findOne({ where: { userId: getUser(req).id } })
+      if (!shop) throw new NotFoundException('the user is not seller')
+      const products = await Product.findAll({ where: { shopId: shop.id } })
 
       return res.status(200).json({
         status: 'success',
@@ -61,19 +82,29 @@ const productController = {
   },
   addProduct: async (req, res, next) => {
     try {
-      const { name, price, image, amount, desc, status, shopId } = req.body
-      if (!name?.trim() || !price || !amount || !status?.trim() || !shopId.trim()) {
-        throw new InputErrorException('the fields [name], [price], [amount], [status], [shopId] are required')
+      const { name, price, totalAmount, desc } = req.body
+      let filePath = ''
+      if (!name?.trim() || !price || !totalAmount) {
+        throw new InputErrorException('the fields [name], [price], [totalAmount] are required')
+      }
+
+      const shop = await Shop.findOne({ where: { userId: getUser(req).id }, include: { model: User } })
+      if (!shop) throw new NotFoundException('the user is not seller')
+
+      if (req.file) {
+        filePath = await awsHandler.addImg(shop.id, name.trim(), req.file)
       }
 
       await Product.create({
         name: name.trim(),
-        image: image?.trim(),
+        image: filePath,
         price: price,
-        amount: amount,
+        restAmount: totalAmount,
+        totalAmount: totalAmount,
+        soldout: 0,
         desc: desc?.trim(),
-        status: status.trim(),
-        shopId: shopId.trim()
+        status: 'enable',
+        shopId: shop.id
       })
 
       return res.status(200).json({
@@ -87,21 +118,30 @@ const productController = {
   },
   editProduct: async (req, res, next) => {
     try {
-      const { id, name, price, image, amount, desc, status, shopId } = req.body
-      if (!id?.trim() || !name?.trim() || !price?.trim() || !amount?.trim() || !status?.trim() || !shopId.trim()) {
-        throw new InputErrorException('the fields [id], [name], [price], [amount], [status], [shopId] are required')
+      const { id, name, price, totalAmount, desc, status } = req.body
+      let filePath = ''
+
+      console.log(req.body.id)
+
+      if (!id) {
+        throw new InputErrorException('the fields [id] is required')
       }
 
       const product = await Product.findByPk(id)
       if (!product) throw new NotFoundException('the product did not exist')
 
+      if (req.file) {
+        filePath = await awsHandler.addImg(product.shopId, product.name, req.file)
+      }
+
       await product.update({
-        name: name.trim() || product.name,
-        price: price.trim() || product.price,
-        image: image?.trim() || product.image,
-        amount: amount || product.amount,
+        name: name?.trim() || product.name,
+        price: price || product.price,
+        image: filePath || product.image,
+        totalAmount: totalAmount || product.totalAmount,
+        restAmount: (product.restAmount + (product.totalAmount - totalAmount)) || product.restAmount,
         desc: desc?.trim() || product.desc,
-        status: status.trim() || product.status
+        status: status || product.status
       })
 
       return res.status(200).json({
