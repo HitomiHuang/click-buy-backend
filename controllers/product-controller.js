@@ -47,7 +47,8 @@ const productController = {
             price: {
               [Op.gte]: minPrice,
               [Op.lte]: maxPrice
-            }
+            },
+            status:'enable',
           },
           include: { model: Shop },
           order: [[selectType, orderBy]]
@@ -68,7 +69,7 @@ const productController = {
     try {
       const shop = await Shop.findOne({ where: { userId: getUser(req).id } })
       if (!shop) throw new NotFoundException('the user is not seller')
-      const products = await Product.findAll({ where: { shopId: shop.id } })
+      const products = await Product.findAll({ where: { shopId: shop.id, status: 'enable' } })
 
       return res.status(200).json({
         status: 'success',
